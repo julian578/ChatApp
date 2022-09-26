@@ -32,7 +32,10 @@ def handle_client(conn, addr):
             msg_length = int(msg_length)
             msg = conn.recv(msg_length).decode(FORMAT)
             
-
+            if msg == DISCONNECT_MESSAGE:
+                disconnect_user(conn)
+                connected = False
+                break
             #recieve destination user
             msg_length = conn.recv(HEADER).decode(FORMAT)
             msg_length = int(msg_length)
@@ -46,9 +49,7 @@ def handle_client(conn, addr):
             msg = f"[{connected_users[conn]}] " + msg
             
 
-            if msg == DISCONNECT_MESSAGE:
-                disconnect_user(conn)
-                connected = False
+            
 
             send_msg(dest_user_conn, msg)
 

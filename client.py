@@ -1,75 +1,77 @@
+from curses import COLOR_WHITE
 from http import client
 from re import A
 import socket
 from xmlrpc.client import Server
 import threading
-
-HEADER = 64
-SERVER_PORT = 5050
-FORMAT = "utf-8"
-DISCONNECT_MESSAGE = "!disconnect"
-SERVER = socket.gethostbyname(socket.gethostname())
-ADDR = (SERVER, SERVER_PORT)
-
-CONNECTED = True
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-USERNAME = ""
-
-def connect_client():
-    global USERNAME
-    print("Type in your username")
-    USERNAME = input()
-    client.connect(ADDR)
-    # send username to server
-    send_msg(USERNAME)
-
-
-def send_msg(msg):
-    
-    message = msg.encode(FORMAT)
-    msg_length = len(message)
-    send_length = str(msg_length).encode(FORMAT)
-    send_length += b' '* (HEADER - len(send_length))
-    client.send(send_length)
-    client.send(message)
+import pygame
 
 
 
-def handle_incoming_messages():
-    
-    global CONNECTED
+class Client():
+    def __init__(self):
 
-    while  CONNECTED:
-        msg_len = client.recv(HEADER).decode(FORMAT)
-        if(msg_len):
-            msg_len = int(msg_len)
-            message = client.recv(msg_len).decode(FORMAT)
-            print(message)
+        self.HEADER = 64
+        self.SERVER_PORT = 5050
+        self.FORMAT = "utf-8"
+        self.DISCONNECT_MESSAGE = "!disconnect"
+        self.SERVER = socket.gethostbyname(socket.gethostname())
+        self.ADDR = (self.SERVER, self.SERVER_PORT)
 
+        self.CONNECTED = True
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.USERNAME = ""
 
-def handle_message_input():
-           
-    global CONNECTED
-    while CONNECTED:
+        
 
-        print("type in the name of the receiving user")
-        dest_username = input()
-        msg = f"Hallo hier ist {USERNAME}"
-        dest_user = dest_username
-        send_msg(msg)
-        send_msg(dest_user)
- 
+    def connect_client(self):
 
-def start_client():
-    thread = threading.Thread(target=handle_incoming_messages)
-    thread.start()
-    
-    input_thread = threading.Thread(target=handle_message_input)
-    input_thread.start()
-
-    
+        global USERNAME
+        print("Type in your username")
+        USERNAME = input()
+        client.connect(self.ADDR)
+        # send username to server
+        self.send_msg(USERNAME)
 
 
-connect_client()
-start_client()
+    def send_msg(msg, self):
+
+        message = msg.encode(self.FORMAT)
+        msg_length = len(message)
+        send_length = str(msg_length).encode(self.FORMAT)
+        send_length += b" " * (self.HEADER - len(send_length))
+        client.send(send_length)
+        client.send(message)
+
+
+    def handle_incoming_messages(self):
+
+
+        while self.CONNECTED:
+            msg_len = client.recv(self.HEADER).decode(self.FORMAT)
+            if msg_len:
+                msg_len = int(msg_len)
+                message = client.recv(msg_len).decode(self.FORMAT)
+                print(message)
+
+
+    def handle_message_input(self):
+
+        
+        while self.CONNECTED:
+
+            print("type in the name of the receiving user")
+            dest_username = input()
+            msg = f"Hallo hier ist {USERNAME}"
+            dest_user = dest_username
+            self.send_msg(msg)
+            self.send_msg(dest_user)
+
+
+    def start_client(self):
+        thread = threading.Thread(target=self.handle_incoming_messages)
+        thread.start()
+
+        input_thread = threading.Thread(target=self.handle_message_input)
+        input_thread.start()
 
