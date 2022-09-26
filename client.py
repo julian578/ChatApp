@@ -50,15 +50,15 @@ def handle_incoming_messages():
 def handle_message_input():
            
     global CONNECTED
-
     while CONNECTED:
-        print("SEND YOUR TEXT:")
-        input1 = input()
-        if input1 == DISCONNECT_MESSAGE:
-            CONNECTED = False
-        send_msg(input1)   
-    
 
+        print("type in the name of the receiving user")
+        dest_username = input()
+        msg = f"Hallo hier ist {USERNAME}"
+        dest_user = dest_username
+        send_msg(msg)
+        send_msg(dest_user)
+ 
 
 def start_client():
     thread = threading.Thread(target=handle_incoming_messages)

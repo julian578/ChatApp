@@ -25,22 +25,32 @@ def handle_client(conn, addr):
     
     while(connected):
         msg_length = conn.recv(HEADER).decode(FORMAT)
+    
         if msg_length:
-        
+            
+            #recieve the message content
             msg_length = int(msg_length)
             msg = conn.recv(msg_length).decode(FORMAT)
+            
+
+            #recieve destination user
+            msg_length = conn.recv(HEADER).decode(FORMAT)
+            msg_length = int(msg_length)
+            #username of the destination user
+            dest_user = conn.recv(msg_length).decode(FORMAT)
+            
+
+            #convert username to conn object
+            dest_user_conn = list(connected_users.keys())[list(connected_users.values()).index(dest_user)]
+
             msg = f"[{connected_users[conn]}] " + msg
-            print(msg)
+            
 
             if msg == DISCONNECT_MESSAGE:
                 disconnect_user(conn)
                 connected = False
 
-            #send the message to all connected users
-            for key in connected_users:
-                if key != conn:
-                    send_msg(key, msg)
-        
+            send_msg(dest_user_conn, msg)
 
     
     conn.close()
