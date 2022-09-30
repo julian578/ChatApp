@@ -20,7 +20,8 @@ server.bind(ADDR)
 
 
 def handle_client(conn, addr):
-    print(f"[NEW CONNECTION] {connected_users[conn]} connected")
+    #print(f"[NEW CONNECTION] {connected_users[conn]} connected")
+    print(f"[{addr}] connected")
     connected = True
     
     while(connected):
@@ -33,25 +34,27 @@ def handle_client(conn, addr):
             msg = conn.recv(msg_length).decode(FORMAT)
             
             if msg == DISCONNECT_MESSAGE:
-                disconnect_user(conn)
+                #disconnect_user(conn)
+                print(f"[{addr} disconnected]")
                 connected = False
+                del connected_users[conn]
                 break
             #recieve destination user
-            msg_length = conn.recv(HEADER).decode(FORMAT)
-            msg_length = int(msg_length)
+            #msg_length = conn.recv(HEADER).decode(FORMAT)
+            #msg_length = int(msg_length)
             #username of the destination user
-            dest_user = conn.recv(msg_length).decode(FORMAT)
+            #dest_user = conn.recv(msg_length).decode(FORMAT)
             
 
             #convert username to conn object
-            dest_user_conn = list(connected_users.keys())[list(connected_users.values()).index(dest_user)]
+            #dest_user_conn = list(connected_users.keys())[list(connected_users.values()).index(dest_user)]
 
-            msg = f"[{connected_users[conn]}] " + msg
+            msg = f"[{addr}] " + msg
+            print(msg)
+
             
 
-            
-
-            send_msg(dest_user_conn, msg)
+            #send_msg(dest_user_conn, msg)
 
     
     conn.close()
@@ -87,11 +90,11 @@ def start():
     while True:
         conn, addr = server.accept()
         
-        username = get_username(conn)
+        #username = get_username(conn)
         
-        connected_users[conn] = username
+        #connected_users[conn] = username
 
-        print(connected_users)
+        #print(connected_users)
         thread = threading.Thread(target=handle_client, args=(conn, addr))
         thread.start()
         print(f"ACTIVE CONNECTIONS: {threading.activeCount() -1} ")
