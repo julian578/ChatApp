@@ -1,7 +1,5 @@
-from curses import COLOR_GREEN, COLOR_WHITE, KEY_DOWN
-
 import pygame
-from client import Client
+import client
 
 WIDTH, HEIGHT = 800, 600
 pygame.init()
@@ -9,6 +7,8 @@ pygame.display.set_caption("Messanger")
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 FONT = pygame.font.Font(None, 16)
+
+
 
 class Gui():
 
@@ -18,18 +18,19 @@ class Gui():
         
         self.connected = True
 
-        self.client = Client()
 
-        self.message_input_box = InputBox(WIDTH / 2 - 150, HEIGHT-50, 300, 20, "Type your message")
+        self.message_input_box = InputBox(WIDTH / 2 - 150, HEIGHT-50, 300, 20, "Type your message", "Send")
         self.conversation_field = ConversationField(WIDTH, HEIGHT-200)
-        #self.client.connect_client()
-        self.conversation_field.add_message(Message("Hello hier ist Julatsdfsdfsjdfjskd", True, WIDTH))
-        self.conversation_field.add_message(Message("Hello 2", False, WIDTH))
+
         
         while self.connected:
 
             clock.tick(60)
             events = pygame.event.get()
+            if client.new_messages:
+                for msg in client.new_messages:
+                    self.conversation_field.add_message(Message(msg[0], msg[1], WIDTH))
+                client.new_messages.clear()
             for event in events:
                 if event.type == pygame.QUIT:
                     self.connected = False
@@ -41,22 +42,24 @@ class Gui():
 
                 
                 self.message_input_box.handle_event(event)
+                self.conversation_field.handle_scrolling(event)
 
             screen.fill((255,255,255))
             self.message_input_box.draw(screen)
             self.conversation_field.draw(screen)
+
             
 
             pygame.display.flip()
         pygame.quit()
         
     def disconnect_user(self):
-        self.client.send_msg("!disconnect")
+        client.send_msg("!disconnect")
     #def send_msg(self):
        # self.client.send_msg("TEST MESSAGE")
 
 class InputBox():
-    def __init__(self, x, y, w, h, title):
+    def __init__(self, x, y, w, h, title, button_title):
         self.rect = pygame.Rect(x,y,w,h)
         self.text = ""
         self.COLOR_INACTIVE = (100, 100, 100)
@@ -65,13 +68,17 @@ class InputBox():
         self.txt_surface = FONT.render(self.text, True, self.COLOR_INACTIVE)
         self.title_surface = FONT.render(title, True, self.COLOR_INACTIVE)
         self.active = False
-        
+        self.submit_button = Button(x+w+10, y,40, 20, button_title)
+
     
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
                 self.active = True
                 self.color = self.COLOR_ACTIVE
+            elif self.submit_button.rect.collidepoint(event.pos):
+                self.submit_button.handle_button_press(self.text)
+                self.text = ""
             else:
                 self.active = False
                 self.color = self.COLOR_INACTIVE
@@ -87,6 +94,7 @@ class InputBox():
                     if self.txt_surface.get_width() < self.rect.width-20:
                         self.text += event.unicode
                 
+                
                 self.txt_surface = FONT.render(self.text, True, self.COLOR_INACTIVE)
     
     
@@ -94,6 +102,7 @@ class InputBox():
         screen.blit(self.title_surface, (self.rect.x + 10, self.rect.y - 20))
         screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y +5))
         pygame.draw.rect(screen, self.color, self.rect, 2)
+        self.submit_button.draw(screen)
 
     def submit_text(self):
         return self.text
@@ -107,17 +116,39 @@ class ConversationField():
         self.surface1 = pygame.Surface((width, height), flags=pygame.SRCALPHA)
         self.messages = []
 
+        #visible part of the scrolling field
+        self.start = 0
+        self.end = len(self.messages)
+
     def add_message(self, message):
         self.messages.append(message)
+        self.end += 1
+        if self.end > self.height / 21:
+            self.start += 1
 
     def render_conversation(self):
         y = 20
         delta_y = 20
-        for message in self.messages:
-                
 
-            self.surface1.blit(message.get_text_surface(), (20, y))
+
+        empty = (0,0,0,0)
+        self.surface1.fill(empty)
+        for i in range(self.start, self.end):
+
+            self.surface1.blit(self.messages[i].get_text_surface(), (20, y))
+            
             y += delta_y
+    
+    def handle_scrolling(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            #scrolling up
+            if event.button == 4 and self.start > 0:
+                self.start -= 1
+                self.end -= 1
+            elif event.button == 5 and self.end < len(self.messages):
+                #scrolling down
+                self.start += 1
+                self.end += 1
     
     def draw(self, screen):
         self.render_conversation()
@@ -173,10 +204,29 @@ class Message():
 
 class Button:
 
-    def __init__(self, x, y, width, height):
+    def __init__(self, x, y, width, height, title):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
+        self.title = title
+        self.color = (0,0,0)
+        self.rect = pygame.Rect(x,y,width,height)
+        self.txt_surface = FONT.render(self.title, True, self.color)
+    
+    def handle_button_press(self, message_input):
+        msg = message_input
 
-Gui()
+        client.send_msg(msg)
+
+    
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, self.rect, 2)
+        screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
+
+if __name__ == "__main__":
+
+    print("type in your username")
+    client.USERNAME = input()
+    client.connect_client()
+    Gui()

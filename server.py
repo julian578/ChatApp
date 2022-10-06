@@ -1,7 +1,5 @@
-from lzma import FORMAT_ALONE
-import socket
-from termios import TIOCPKT_FLUSHREAD
 import threading
+import socket
 
 HEADER = 64
 PORT = 5050
@@ -20,9 +18,13 @@ server.bind(ADDR)
 
 
 def handle_client(conn, addr):
-    #print(f"[NEW CONNECTION] {connected_users[conn]} connected")
-    print(f"[{addr}] connected")
+
     connected = True
+
+    #send new connection message to all connected users
+    msg = f"[{connected_users[conn]}] connected!"
+    send_msg_to_every_connected_user(msg)
+        
     
     while(connected):
         msg_length = conn.recv(HEADER).decode(FORMAT)
@@ -34,23 +36,18 @@ def handle_client(conn, addr):
             msg = conn.recv(msg_length).decode(FORMAT)
             
             if msg == DISCONNECT_MESSAGE:
-                #disconnect_user(conn)
-                print(f"[{addr} disconnected]")
+
+                msg = f"[{connected_users[conn]} disconnected!]"
+                disconnect_user(conn)
+                
+                send_msg_to_every_connected_user(msg)
                 connected = False
-                del connected_users[conn]
                 break
-            #recieve destination user
-            #msg_length = conn.recv(HEADER).decode(FORMAT)
-            #msg_length = int(msg_length)
-            #username of the destination user
-            #dest_user = conn.recv(msg_length).decode(FORMAT)
-            
+                
+            else:
 
-            #convert username to conn object
-            #dest_user_conn = list(connected_users.keys())[list(connected_users.values()).index(dest_user)]
+                send_msg_to_every_connected_user(f"[{connected_users[conn]}] {msg}")
 
-            msg = f"[{addr}] " + msg
-            print(msg)
 
             
 
@@ -59,11 +56,13 @@ def handle_client(conn, addr):
     
     conn.close()
 
-
 def disconnect_user(conn):
-    print(f"[{connected_users[conn]}] disconnected")
     del connected_users[conn]
+    
 
+def send_msg_to_every_connected_user(msg):
+    for conn in connected_users:
+        send_msg(conn, msg)
 
 def send_msg(conn, msg):
     message = msg.encode(FORMAT)
@@ -90,9 +89,9 @@ def start():
     while True:
         conn, addr = server.accept()
         
-        #username = get_username(conn)
+        username = get_username(conn)
         
-        #connected_users[conn] = username
+        connected_users[conn] = username
 
         #print(connected_users)
         thread = threading.Thread(target=handle_client, args=(conn, addr))
