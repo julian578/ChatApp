@@ -51,7 +51,7 @@ def handle_client(conn, addr):
 
             
 
-            #send_msg(dest_user_conn, msg)
+
 
     
     conn.close()
@@ -93,7 +93,7 @@ def start():
         
         connected_users[conn] = username
 
-        #print(connected_users)
+
         thread = threading.Thread(target=handle_client, args=(conn, addr))
         thread.start()
         print(f"ACTIVE CONNECTIONS: {threading.activeCount() -1} ")

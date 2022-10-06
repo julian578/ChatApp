@@ -18,18 +18,14 @@ new_messages = []
 
 
     
-
 def connect_client():
 
-    #global USERNAME
-    #USERNAME = "Julian"
-    #print("Type in your username")
-    #USERNAME = input()
     client.connect(ADDR)
     start_client()
     # send username to server
     send_msg(USERNAME)
-        
+
+# processing incoming messages in a seperate thread
 def start_client():
     thread = threading.Thread(target=handle_incoming_messages)
     thread.start()
@@ -37,16 +33,16 @@ def start_client():
 
 def send_msg(msg):
 
-    
-    print(msg)
-
     message = msg.encode(FORMAT)
 
+
     msg_length = len(message)
+    
+    #send length of message to the server with constant length of 64(HEADER) bytes
     send_length = str(msg_length).encode(FORMAT)
-    #send_length = bytes(str(msg_length), FORMAT)
     send_length += b" " * (HEADER - len(send_length))
     client.send(send_length)
+
     client.send(message)
 
 

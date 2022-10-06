@@ -55,8 +55,7 @@ class Gui():
         
     def disconnect_user(self):
         client.send_msg("!disconnect")
-    #def send_msg(self):
-       # self.client.send_msg("TEST MESSAGE")
+    
 
 class InputBox():
     def __init__(self, x, y, w, h, title, button_title):
@@ -108,6 +107,7 @@ class InputBox():
         return self.text
 
 
+#window with messages
 class ConversationField():
     def __init__(self, width, height):
         self.width = width
@@ -177,9 +177,9 @@ class Message():
 
 
             x = (field_width - self.text_surface.get_width())/3.2
-            print(self.text_surface.get_width())
+
             x = int(x)
-            print(x)
+
             s = ""
             for i in range(x):
                 s += " "
