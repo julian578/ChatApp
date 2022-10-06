@@ -1,6 +1,5 @@
-from lzma import FORMAT_ALONE
+
 import socket
-from termios import TIOCPKT_FLUSHREAD
 import threading
 
 HEADER = 64
