@@ -3,7 +3,7 @@ import client
 
 WIDTH, HEIGHT = 800, 600
 pygame.init()
-pygame.display.set_caption("Messanger")
+
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 FONT = pygame.font.Font(None, 16)
@@ -228,5 +228,6 @@ if __name__ == "__main__":
 
     print("type in your username")
     client.USERNAME = input()
+    pygame.display.set_caption(f"{client.USERNAME}'s Messanger")
     client.connect_client()
     Gui()
