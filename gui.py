@@ -29,6 +29,7 @@ class Gui():
             events = pygame.event.get()
             if client.new_messages:
                 for msg in client.new_messages:
+                    #msg[0] = content of message, msg[1] = my own message(boolean)
                     self.conversation_field.add_message(Message(msg[0], msg[1], WIDTH))
                 client.new_messages.clear()
             for event in events:
@@ -37,8 +38,7 @@ class Gui():
                     self.disconnect_user()
                     break
 
-                if event.type == pygame.K_SPACE:
-                    pass
+                
 
                 
                 self.message_input_box.handle_event(event)
